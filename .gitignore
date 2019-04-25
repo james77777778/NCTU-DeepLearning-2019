@@ -1,0 +1,16 @@
+# virtualenv
+venv
+
+# vscode
+.vscode
+
+# pycache
+__pycache__
+.ipynb_checkpoints
+
+# files
+results
+data
+*.csv
+*.png
+*.pdf
