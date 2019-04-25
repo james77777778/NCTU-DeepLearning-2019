@@ -23,15 +23,15 @@ transforms = transforms.Compose(
 train_dataset = ImageFolder('data/processed/train', transform=transforms)
 valid_dataset = ImageFolder('data/processed/val', transform=transforms)
 train_dataloader = DataLoader(
-    dataset=train_dataset, batch_size=64, shuffle=True, num_workers=3)
+    dataset=train_dataset, batch_size=128, shuffle=True, num_workers=3)
 valid_dataloader = DataLoader(
-    dataset=valid_dataset, batch_size=64, shuffle=False, num_workers=3)
+    dataset=valid_dataset, batch_size=128, shuffle=False, num_workers=3)
 
 model = CNN_Net().to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 criterion = torch.nn.CrossEntropyLoss()
 
-nepoch = 10
+nepoch = 50
 loss_record = {'train_loss': [], 'train_acc': [], 'valid_acc': []}
 for epoch in range(nepoch):
     # train
