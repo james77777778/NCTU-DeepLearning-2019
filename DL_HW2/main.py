@@ -87,12 +87,21 @@ for m in model_class:
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
-            }, '{}_best_model'.format(class_name))
+            }, 'models/{}_best_model'.format(class_name))
 
     plt.figure()
+    plt.ylim(0.0, 2.5)
+    plt.title('training curve')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
     plt.plot(loss_record['train_loss'])
-    plt.savefig('{}_train_loss.png'.format(class_name))
+    plt.savefig('results/{}_train_loss.png'.format(class_name))
     plt.figure()
-    plt.plot(loss_record['train_acc'])
-    plt.plot(loss_record['valid_acc'])
-    plt.savefig('{}_acc.png'.format(class_name))
+    plt.ylim(0.0, 100.0)
+    plt.title('accuracy')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.plot(loss_record['train_acc'], label='train')
+    plt.plot(loss_record['valid_acc'], label='valid')
+    plt.legend(loc='upper left')
+    plt.savefig('results/{}_acc.png'.format(class_name))
