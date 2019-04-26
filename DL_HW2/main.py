@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
@@ -14,21 +15,28 @@ import os
 if 'DL_HW2' not in os.getcwd():
     os.chdir(os.getcwd()+'/DL_HW2')
 '''
+# create needed folder
+needed_folder = ['results', 'models']
+for f in needed_folder:
+    if not os.path.exists(f):
+        os.makedirs(f)
+# run on gpu
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+# preprocessing
 transforms = transforms.Compose(
     [transforms.RandomResizedCrop((128, 128), scale=(0.5, 1.0)),
      transforms.ToTensor(),
      transforms.Normalize([0.5, 0.5, 0.5], [1., 1., 1.])])
+# dataset, dataloader
 train_dataset = ImageFolder('data/processed/train', transform=transforms)
 valid_dataset = ImageFolder('data/processed/val', transform=transforms)
 train_dataloader = DataLoader(
     dataset=train_dataset, batch_size=256, shuffle=True, num_workers=6)
 valid_dataloader = DataLoader(
     dataset=valid_dataset, batch_size=256, shuffle=False, num_workers=6)
-
+# number of epoch
 nepoch = 300
-
+# model lists
 model_class = [Net_O, Net_K, Net_S, Net_F]
 for m in model_class:
     class_name = m.__name__
@@ -88,7 +96,7 @@ for m in model_class:
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
             }, 'models/{}_best_model'.format(class_name))
-
+    # plot results
     plt.figure()
     plt.ylim(0.0, 2.5)
     plt.title('training curve')
