@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import torch
 from torchtext import data
 
-from model import RNN
+from model import LSTM
 
 
 def binary_accuracy(preds, y):
@@ -26,7 +26,8 @@ def train(model, iterator, optimizer, criterion):
     model.train()
     for batch in iterator:
         optimizer.zero_grad()
-        predictions = model(batch.x).squeeze(1)
+        text, text_lengths = batch.x
+        predictions = model(text, text_lengths).squeeze(1)
         loss = criterion(predictions, batch.y)
         acc = binary_accuracy(predictions, batch.y)
         loss.backward()
@@ -42,7 +43,8 @@ def evaluate(model, iterator, criterion):
     model.eval()
     with torch.no_grad():
         for batch in iterator:
-            predictions = model(batch.x).squeeze(1)
+            text, text_lengths = batch.x
+            predictions = model(text, text_lengths).squeeze(1)
             loss = criterion(predictions, batch.y)
             acc = binary_accuracy(predictions, batch.y)
             epoch_loss += loss.item()
@@ -61,7 +63,8 @@ for f in needed_folder:
     if not os.path.exists(f):
         os.makedirs(f)
 # load data
-TITLE = data.Field(tokenize="spacy", fix_length=10, pad_token="0")
+TITLE = data.Field(
+    tokenize="spacy", fix_length=10, pad_token="0", include_lengths=True)
 LABEL = data.LabelField(dtype=torch.float)
 fields = {'title': ('x', TITLE), 'label': ('y', LABEL)}
 train_data, test_data = data.TabularDataset.splits(
@@ -85,16 +88,22 @@ INPUT_DIM = len(TITLE.vocab)
 EMBEDDING_DIM = 100
 HIDDEN_DIM = 128
 OUTPUT_DIM = 1
+N_LAYER = 1
+BIDIRECTIONAL = True
+DROPOUT = 0.0
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # setup iterator, model, opti, crit
 train_iterator, test_iterator = data.BucketIterator.splits(
     (train_data, test_data),
     batch_size=BATCH_SIZE,
     sort_key=lambda data: len(data.x),
+    sort_within_batch=True,
     device=device)
 train_iterator.shuffle = True
 test_iterator.shuffle = False
-model = RNN(INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM).to(device)
+model = LSTM(
+    INPUT_DIM, EMBEDDING_DIM, HIDDEN_DIM, OUTPUT_DIM,
+    N_LAYER, BIDIRECTIONAL, DROPOUT).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 criterion = torch.nn.BCEWithLogitsLoss().to(device)
 # train
@@ -118,7 +127,7 @@ for epoch in range(N_EPOCHS):
     test_record["acc"].append(test_acc*100.)
     test_record["loss"].append(test_loss)
 # plot results
-class_name = "RNN"
+class_name = "LSTM"
 plt.figure()
 plt.ylim(0.0, 5.0)
 plt.title('training curve')

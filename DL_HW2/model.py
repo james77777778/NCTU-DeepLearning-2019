@@ -140,7 +140,7 @@ class RNN(nn.Module):
         self.embedding = nn.Embedding(input_dim, embedding_dim)
         self.rnn = nn.RNN(embedding_dim, hidden_dim)
         self.fc = nn.Linear(hidden_dim, output_dim)
-        
+
     def forward(self, text):
         # text = [sent len, batch size]
         embedded = self.embedding(text)
@@ -149,4 +149,34 @@ class RNN(nn.Module):
         # output = [sent len, batch size, hid dim]
         # hidden = [1, batch size, hid dim]
         assert torch.equal(output[-1, :, :], hidden.squeeze(0))
+        return self.fc(hidden.squeeze(0))
+
+
+# LSTM
+class LSTM(nn.Module):
+    def __init__(self, input_dim, embedding_dim, hidden_dim, output_dim,
+                 n_layers, bidirectional, dropout):
+        super().__init__()
+        self.embedding = nn.Embedding(input_dim, embedding_dim)
+        self.rnn = nn.LSTM(embedding_dim,
+                           hidden_dim,
+                           num_layers=n_layers,
+                           bidirectional=bidirectional,
+                           dropout=dropout)
+        self.fc = nn.Linear(hidden_dim*2, output_dim)
+
+    def forward(self, text, text_lengths):
+        # text = [sent len, batch size]
+        embedded = self.embedding(text)
+        # embedded = [sent len, batch size, emb dim]
+        packed_embedded = nn.utils.rnn.pack_padded_sequence(
+            embedded, text_lengths)
+        packed_output, (hidden, cell) = self.rnn(packed_embedded)
+        output, output_lengths = nn.utils.rnn.pad_packed_sequence(
+            packed_output)
+        # output = [sent len, batch size, hid dim * num directions]
+        # hidden = [num layers * num directions, batch size, hid dim]
+        # cell = [num layers * num directions, batch size, hid dim]
+        hidden = torch.cat((hidden[-2, :, :], hidden[-1, :, :]), dim=1)
+        # hidden = [batch size, hid dim * num directions]
         return self.fc(hidden.squeeze(0))
