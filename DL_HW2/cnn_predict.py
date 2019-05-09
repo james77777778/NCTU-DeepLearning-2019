@@ -38,7 +38,7 @@ with torch.no_grad():
         outputs = model(datas)
         _, predicted = torch.max(outputs, 1)
         c = (predicted == targets).squeeze()
-        for i in range(valid_dataloader.batch_size):
+        for i in range(targets.size(0)):
             label = targets[i]
             class_correct[label] += c[i].item()
             class_total[label] += 1
