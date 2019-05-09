@@ -24,7 +24,8 @@ valid_dataloader = DataLoader(
     dataset=valid_dataset, batch_size=256, shuffle=False)
 classes = valid_dataset.classes
 model = Net_O().to(device)
-model.load_state_dict('models/Net_O_best_model')
+best_model = torch.load('models/Net_O_best_model')
+model.load_state_dict(best_model['model_state_dict'])
 # valid
 model.eval()
 class_correct = list(0. for i in range(10))
