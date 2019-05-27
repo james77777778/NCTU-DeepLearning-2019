@@ -16,8 +16,19 @@ from models import Generator
 from models import Discriminator
 from utils import ReplayBuffer
 from utils import weights_init_normal
-###### Definition of variables ######
+
+
+'''
+Definition of variables
+'''
 # TODO : assign input_nc and output_nc
+input_nc = 3  # number of channels of input data
+output_nc = 3  # number of channels of output data
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+size = 32  # size of the data crop (squared assumed)
+batchsize = 40  # size of the batches
+animation_root = 'animation'  # root directory of the dataset
+cartoon_root = 'cartoon'  # root directory of the dataset
 
 # Networks
 netG_A2B = Generator(input_nc, output_nc)
@@ -35,11 +46,16 @@ netG_A2B.eval()
 netG_B2A.eval()
 
 # Dataset loader
-transform = transforms.Compose([transforms.Resize((32, 32)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-animation_set = torchvision.datasets.ImageFolder(animation_root, transform) 
+transform = transforms.Compose([
+    transforms.Resize((size, size)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+animation_set = torchvision.datasets.ImageFolder(animation_root, transform)
 cartoon_set = torchvision.datasets.ImageFolder(cartoon_root, transform) 
-animation_loader = torch.utils.data.DataLoader(dataset=animation_set,batch_size=batchsize,shuffle=True)
-cartoon_loader = torch.utils.data.DataLoader(dataset=cartoon_set,batch_size=batchsize,shuffle=True)
+animation_loader = torch.utils.data.DataLoader(
+    dataset=animation_set, batch_size=batchsize, shuffle=True)
+cartoon_loader = torch.utils.data.DataLoader(
+    dataset=cartoon_set, batch_size=batchsize, shuffle=True)
 
 
 if not os.path.exists('output/animation'):
@@ -47,7 +63,10 @@ if not os.path.exists('output/animation'):
 if not os.path.exists('output/cartoon'):
     os.makedirs('output/cartoon')
 
-i=0
+Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.Tensor
+input_A = Tensor(batchsize, input_nc, size, size)
+input_B = Tensor(batchsize, output_nc, size, size)
+i = 0
 for batch in zip(animation_loader, cartoon_loader):
     # Set model input
     A = torch.FloatTensor(batch[0][0])
@@ -67,7 +86,7 @@ for batch in zip(animation_loader, cartoon_loader):
 
     sys.stdout.write('\rGenerated images %04d' % (i+1))
     i = i+1
-    if (i==10):
+    if (i == 10):
         break
 
 sys.stdout.write('\n')
