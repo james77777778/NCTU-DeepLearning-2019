@@ -2,12 +2,11 @@ import os
 import itertools
 
 import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
 from torch.autograd import Variable
-from PIL import Image
 import torch
 import torchvision
 import numpy as np
+import matplotlib.pyplot as plt
 
 from models import Generator
 from models import Discriminator
@@ -120,11 +119,6 @@ for epoch in range(1, epochs):
         rec_A = netG_B2A(fake_B)   # G_B(G_A(A))
         fake_A = netG_B2A(real_B)  # G_B(B)
         rec_B = netG_A2B(fake_A)   # G_A(G_B(B))
-        # Identity loss
-        idt_A = netG_B2A(real_B)
-        loss_idt_A = criterion_identity(idt_A, real_A) * lambda_A * lambda_idt
-        idt_B = netG_A2B(real_A)
-        loss_idt_B = criterion_identity(idt_B, real_B) * lambda_B * lambda_idt
         # GAN loss
         loss_G_A = criterion_GAN(netD_A(fake_A), target_real)
         loss_G_B = criterion_GAN(netD_B(fake_B), target_real)
@@ -133,7 +127,6 @@ for epoch in range(1, epochs):
         loss_cycle_B = criterion_cycle(rec_B, real_B) * lambda_B
 
         loss_G = (
-            loss_idt_A + loss_idt_B +
             loss_G_A + loss_G_B +
             loss_cycle_A + loss_cycle_B)
         loss_G.backward()
@@ -198,3 +191,19 @@ print(
     time.strftime("%H hr %M min %S sec", time.gmtime(end_time - start_time)))
 
 # TODO : plot the figure
+# save loss values
+np.savetxt("G_loss.csv", G_loss, delimiter=",", fmt='%f', header='G_loss')
+np.savetxt("DA_loss.csv", DA_loss, delimiter=",", fmt='%f', header='DA_loss')
+np.savetxt("DB_loss.csv", DB_loss, delimiter=",", fmt='%f', header='DB_loss')
+# save plots
+plt.figure(1)
+plt.ylabel('loss')
+plt.xlabel('iterations')
+plt.plot(G_loss, label='Generator')
+plt.savefig('generator.png')
+plt.figure(2)
+plt.ylabel('loss')
+plt.xlabel('iterations')
+plt.plot(DA_loss, label='Discriminator A')
+plt.plot(DB_loss, label='Discriminator B')
+plt.savefig('discriminator.png')

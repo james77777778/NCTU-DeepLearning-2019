@@ -2,20 +2,12 @@ from torchvision.utils import save_image
 import os
 import sys
 
-import itertools
-
 import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
 from torch.autograd import Variable
-from PIL import Image
 import torch
 import torchvision
-import numpy as np
 
 from models import Generator
-from models import Discriminator
-from utils import ReplayBuffer
-from utils import weights_init_normal
 
 
 '''
@@ -51,7 +43,7 @@ transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 animation_set = torchvision.datasets.ImageFolder(animation_root, transform)
-cartoon_set = torchvision.datasets.ImageFolder(cartoon_root, transform) 
+cartoon_set = torchvision.datasets.ImageFolder(cartoon_root, transform)
 animation_loader = torch.utils.data.DataLoader(
     dataset=animation_set, batch_size=batchsize, shuffle=True)
 cartoon_loader = torch.utils.data.DataLoader(
