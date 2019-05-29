@@ -14,7 +14,7 @@ size = 32  # size of the data crop (squared assumed)
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # Model
-model = VAE.to(device)
+model = VAE().to(device)
 model.load_state_dict(torch.load('ckpt/VAE.pth'))
 
 # Dataset loader

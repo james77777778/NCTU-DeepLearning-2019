@@ -1,5 +1,6 @@
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.utils.data
@@ -85,3 +86,9 @@ if __name__ == "__main__":
                        'results/sample_' + str(epoch) + '.png')
     np.savetxt(
         "VAE_loss.csv", all_loss, delimiter=",", fmt='%f', header='VAE_loss')
+
+    plt.style.use('classic')
+    plt.xlabel('iterations')
+    plt.ylabel('loss')
+    plt.plot(all_loss)
+    plt.savefig('DL_HW3/VAE_loss.png')
