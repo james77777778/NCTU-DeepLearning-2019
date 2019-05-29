@@ -16,3 +16,4 @@ data
 *.png
 *.pdf
 *.jpg
+*.pth
